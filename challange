@@ -1,0 +1,119 @@
+Challenge #1
+A 3-tier environment is a common setup. Use a tool of your choosing/familiarity create these
+resources on a cloud environment (Azure/AWS/GCP). Please remember we will not be judged
+on the outcome but more focusing on the approach, style and reproducibility.
+
+Ans: Aws infrastructure
+
+In AWS account first step is setup Networking using VPC (Virtual private Network)
+    Create New VPC for project and selecrt CIDR range for enough avaiable IP's.
+    Create public and private subnets for application and database
+
+AWS basic Networking setup
+    Create an Internet Gateway and attach it to the VPC.
+    Create Route Tables and associate them with appropriate subnets.
+    Configure network access control lists (ACLs) to control inbound and outbound traffic.
+    Create an elastic IP address. 
+
+Deploy Web Tier in Public Subnet
+    Launch an EC2 instance to host your web servers. We can host using auto scaling also for high availablity. 
+    Configure security groups to allow inbound traffic on port 80/443 (HTTP/HTTPS).
+    we can install the web application server in ec2 instances and configure the same.
+
+Deploy Application Tier in Public Subnet:
+    Launch additional EC2 instances to host application server
+    Configure security groups to allow inbound/outbond traffic from web and database servers.
+    Install and configure your application software/framework.
+
+Deploy the Database Tier in private subnet:
+    We can choose database service like Amazon RDS (Relational Database Service) or Amazon Aurora, Amazon DynamoDB. we can configure geo redundant databases.
+    We can launch a database instance within the database subnet.
+    Configure security groups to allow inbound traffic from the application tier.
+    Set up the database, create tables, and configure access controls.
+    we can use Amazon S3 buckets for storing static assets.
+
+Configure Load Balancer
+    Set up an Application Load Balancer (ALB) to distribute traffic across the web tier instances.
+    Configure the load balancer to perform health checks on the web tier instances.
+
+For monitioring we can use cloudwatch.
+  
+----------------------------------------------------------------------------------------------------------------------
+Challenge #2
+We need to write code that will query the meta data of an instance within AWS or Azure or GCP
+and provide a json formatted output.
+The choice of language and implementation is up to you.
+Bonus Points
+The code allows for a particular data key to be retrieved individually
+Hints
+· Aws Documentation (https://docs.aws.amazon.com/)
+· Azure Documentation (https://docs.microsoft.com/en-us/azure/?product=featured)
+· Google Documentation (https://cloud.google.com/docs)
+
+Ans:
+AWS instance metadata endpoint 
+http://169.254.169.254/latest/meta-data/
+
+Prerequisite: Python request library 
+$ pip install requests
+
+
+import requests
+import json
+
+def get_instance_metadata():
+    metadata_url = 'http://169.254.169.254/latest/meta-data/'
+    response = requests.get(metadata_url)
+    response.raise_for_status()  # Raise an exception if the request fails
+
+    metadata = {}
+    for item in response.text.splitlines():
+        item_url = metadata_url + item
+        item_response = requests.get(item_url)
+        item_response.raise_for_status()
+
+        # Add the metadata item to the dictionary
+        metadata[item] = item_response.text
+
+    return metadata
+
+metadata = get_instance_metadata()
+json_output = json.dumps(metadata, indent=4)
+print(json_output)
+
+
+------------------------------------------------------------------------------------------------------------------------------
+
+Challenge #3
+We have a nested object. We would like a function where you pass in the object and a key and get back the value.
+The choice of language and implementation is up to you.
+Example Inputs
+object = {“a”:{“b”:{“c”:”d”}}}
+key = a/b/c
+object = {“x”:{“y”:{“z”:”a”}}}
+key = x/y/z
+value = a
+Hints:
+We would like to see some tests.
+A quick read to help you along the way - We would expect it in any other language apart from
+elixir.
+
+Ans:
+
+def get_value_from_nested_object(obj, key):
+    keys = key.split('/')  # Split the key into individual levels
+
+    for k in keys:
+        if k in obj:
+            obj = obj[k]
+        else:
+            return None  # Key not found in the object
+
+    return obj
+
+# Example
+object1 = {"a": {"b": {"c": "d"}}}
+key1 = 'a/b/c'
+value1 = get_value_from_nested_object(object1, key1)
+print(value1)  # Output: d
+
